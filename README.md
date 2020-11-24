@@ -36,6 +36,7 @@ To see your application, open a browser window and navigate to http://localhost:
 
 
 # Step 4 — ホームページのセットアップ
-
-
+必要なパッケージをインストールしたら、次はユーザーがサイトに訪れた際に確認できる、このアプリケーションのhomepageを生成します.
+RailsはModel-View-Controllerの設計思想を採用しています.MVCパターンではcontrollerの目的は特定のリクエストを受信して適切なmodelかviewへパスします。
+デフォルトのroot URLを変更するためにcontroller and view を生成します.
 
