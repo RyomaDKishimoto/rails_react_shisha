@@ -49,3 +49,8 @@ RailsはModel-View-Controllerの設計思想を採用しています.MVCパタ�
 - `homepage.scss`Homepageコントローラーに関するstylesを追記するファイルです.
 - `homepage_helper.rb` helper methodsを追記するhelperファイル
 - An index.html.erb file which is the view page for rendering anything related to the homepage.
+
+
+
+# Step 5 — Reactの設定 Railsのフロントエンドとして
+
