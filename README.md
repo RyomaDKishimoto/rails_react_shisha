@@ -40,3 +40,12 @@ To see your application, open a browser window and navigate to http://localhost:
 RailsはModel-View-Controllerの設計思想を採用しています.MVCパターンではcontrollerの目的は特定のリクエストを受信して適切なmodelかviewへパスします。
 デフォルトのroot URLを変更するためにcontroller and view を生成します.
 
+以下のコマンドでcontrollerを生成します.
+`rails g controller Homepage index` Homepageというcontroller
+
+以下ファイルも一緒に生成されます.
+- `homepage_controller.rb`ファイルはhomepageに関するリクエストをレシーブします.
+- `homepage.js`Homepageコントローラーに関するJavascriptの振る舞いを追記するファイルです.
+- `homepage.scss`Homepageコントローラーに関するstylesを追記するファイルです.
+- `homepage_helper.rb` helper methodsを追記するhelperファイル
+- An index.html.erb file which is the view page for rendering anything related to the homepage.
