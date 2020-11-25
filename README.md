@@ -80,21 +80,27 @@ Run the following command in your Terminal window to create a Recipe model:
 次に, shishaファイルにeditします. databaseへの保存が有効なデータを確認します.
 それを達成するために, modelにいくつかのバリデーションを追記します.
 
-`nano ~/rails_react_recipe/app/models/recipe.rb`
+```
+nano ~/rails_react_recipe/app/models/recipe.rb
+```
 
-`
+```
 class Recipe < ApplicationRecord
   validates :name, presence: true
   validates :ingredients, presence: true
   validates :instruction, presence: true
 end
-`
+```
 
 - データベースの更新
-`rails db:migrate`
+```
+rails db:migrate
+```
 
 - rails generate controller <コントローラー名> <アクション名>
-`rails generate controller api/v1/Recipes index create show destroy -j=false -y=false --skip-template-engine --no-helper`
+```
+rails generate controller api/v1/Recipes index create show destroy -j=false -y=false --skip-template-engine --no-helper
+```
 
 
 In this command, you created a Recipes controller in an api/v1 directory with an index, create, show, and destroy action. The index action will handle fetching all your recipes, the create action will be responsible for creating new recipes, the show action will fetch a single recipe, and the destroy action will hold the logic for deleting a recipe.
@@ -107,7 +113,7 @@ You also passed some flags to make the controller more lightweight, including:
 - --no-helper, which instructs Rails to skip generating a helper file for your controller.
 
 
-`
+```
 Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
@@ -121,7 +127,8 @@ Rails.application.routes.draw do
   get '/*path' => 'homepage#index'
   For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
 end
-`
+```
+
 このルートファイルでは、データを投稿したり削除したりできるように、createとdestroyのルートのHTTP動詞を変更しました。
 また、ルートに:idパラメータを追加することで、showとdestroyアクションのためのルートを修正しました。
 
@@ -135,7 +142,7 @@ RailsはActiveRecordライブラリを使って、このようなデータベー
 ActiveRecordはクラスをリレーショナルデータベースのテーブルに接続し、それらを操作するための豊富なAPIを提供します。
 
 すべてのレシピを取得するには、ActiveRecordを使ってレシピテーブルをクエリし、データベースに存在するすべてのレシピを取得します。
-`
+```
 class Api::V1::RecipesController < ApplicationController
   def index
     recipe = Recipe.all.order(created_at: :desc)
@@ -151,7 +158,7 @@ class Api::V1::RecipesController < ApplicationController
   def destroy
   end
 end
-`
+```
 
 インデックスアクションでは、ActiveRecordが提供するallメソッドを使用して、データベース内のすべてのシーシャを取得します.
 order メソッドを使用して、作成日の降順に並べ替えます。この方法では、新しいシーシャを最初に取得します.
@@ -161,7 +168,7 @@ order メソッドを使用して、作成日の降順に並べ替えます。�
 すべてのシーシャを取得するのと同様に、提供されたシーシャの詳細を検証して保存するためにActiveRecordに依存します.
 次のハイライトされた行のコードでシーシャコントローラを更新します.
 
-`
+```
 class Api::V1::RecipesController < ApplicationController
   def index
     recipe = Recipe.all.order(created_at: :desc)
@@ -189,7 +196,7 @@ class Api::V1::RecipesController < ApplicationController
     params.permit(:name, :image, :ingredients, :instruction)
   end
 end
-`
+```
 
 createアクションでは、ActiveRecordのcreateメソッドを使用して新しいレシピを作成します.
 createメソッドは、モデルに提供されたすべてのコントローラパラメータを一度に割り当てる機能を持っています.
@@ -203,7 +210,7 @@ recipe_paramsはプライベートメソッドで、間違ったコンテンツ�
 これで、レシピコントローラはレシピを読み込んで作成することができます.
 あとは、1つのレシピを読み込んで削除するロジックだけです.次のコードでレシピコントローラを更新してください.
 
-`
+```
 class Api::V1::RecipesController < ApplicationController
   def index
     recipe = Recipe.all.order(created_at: :desc)
@@ -242,4 +249,4 @@ class Api::V1::RecipesController < ApplicationController
     @recipe ||= Recipe.find(params[:id])
   end
 end
-`
+```
