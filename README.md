@@ -62,4 +62,65 @@ Shisa ModelはControllerから受け取ってハンドリングする情報を�
 Modelがcontrollerからの返り値としてShishaデータを返す.
 
 
+スタートしましょう. Shisha Model を作成することでRailsで提供されているModelを生成するサブコマンドを使うことで,そしてModelを名前を指定して.
+Start by creating a Recipe model by using the generate model subcommand provided by Rails and by specifying the name of the model along with its columns and data types. 
+
+ターミナルで以下のコマンドをターミナルで Run してShisha Modelを生成します.
+Run the following command in your Terminal window to create a Recipe model:
+
+`rails generate model Recipe name:string ingredients:text instruction:text image:string`
+
+上記コマンドでカラムと名前を一緒にmodelを生成できます.生成する際にカラムのタイプを一緒に指定してあげることができます.
+`generate model` コマンドで 以下のファイルが生成されます.
+
+- recipe.rb file that holds all the model related logic.
+- A `20190407161357_create_recipes.rb` file (the number at the beginning of the file may differ depending on the date when you run the command). This is a migration file that contains the instruction for creating the database structure.
+
+
+次に, shishaファイルにeditします. databaseへの保存が有効なデータを確認します.
+それを達成するために, modelにいくつかのバリデーションを追記します.
+
+`nano ~/rails_react_recipe/app/models/recipe.rb`
+
+`
+class Recipe < ApplicationRecord
+  validates :name, presence: true
+  validates :ingredients, presence: true
+  validates :instruction, presence: true
+end
+`
+
+- データベースの更新
+`rails db:migrate`
+
+- rails generate controller <コントローラー名> <アクション名>
+`rails generate controller api/v1/Recipes index create show destroy -j=false -y=false --skip-template-engine --no-helper`
+
+
+In this command, you created a Recipes controller in an api/v1 directory with an index, create, show, and destroy action. The index action will handle fetching all your recipes, the create action will be responsible for creating new recipes, the show action will fetch a single recipe, and the destroy action will hold the logic for deleting a recipe.
+
+You also passed some flags to make the controller more lightweight, including:
+
+- -j=false which instructs Rails to skip generating associated JavaScript files.
+- -y=false which instructs Rails to skip generating associated stylesheet files.
+- --skip-template-engine, which instructs Rails to skip generating Rails view files, since React is handling your front-end needs.
+- --no-helper, which instructs Rails to skip generating a helper file for your controller.
+
+
+`
+Rails.application.routes.draw do
+  namespace :api do
+    namespace :v1 do
+      get 'recipes/index'
+      post 'recipes/create'
+      get '/show/:id', to: 'recipes#show'
+      delete '/destroy/:id', to: 'recipes#destroy'
+    end
+  end
+  root 'homepage#index'
+  get '/*path' => 'homepage#index'
+  # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
+end
+`
+
 
