@@ -122,5 +122,125 @@ Rails.application.routes.draw do
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
 end
 `
+このルートファイルでは、データを投稿したり削除したりできるように、createとdestroyのルートのHTTP動詞を変更しました。
+また、ルートに:idパラメータを追加することで、showとdestroyアクションのためのルートを修正しました。
 
+また、既存のルートにマッチしない他のリクエストをホームページコントローラーのインデックスアクションに誘導するget '/*path'を持つキャッチオールートを追加しました。
+このようにして、フロントエンドのルーティングはレシピの作成、読み込み、削除に関係のないリクエストを処理します。
+
+このコマンドを実行すると、プロジェクトのURIパターン、動詞、一致するコントローラまたはアクションのリストが表示されます。
+
+次に、すべてのレシピを一度に取得するロジックを追加します。
+RailsはActiveRecordライブラリを使って、このようなデータベース関連のタスクを処理しています。
+ActiveRecordはクラスをリレーショナルデータベースのテーブルに接続し、それらを操作するための豊富なAPIを提供します。
+
+すべてのレシピを取得するには、ActiveRecordを使ってレシピテーブルをクエリし、データベースに存在するすべてのレシピを取得します。
+`
+class Api::V1::RecipesController < ApplicationController
+  def index
+    recipe = Recipe.all.order(created_at: :desc)
+    render json: recipe
+  end
+
+  def create
+  end
+
+  def show
+  end
+
+  def destroy
+  end
+end
+`
+
+インデックスアクションでは、ActiveRecordが提供するallメソッドを使用して、データベース内のすべてのシーシャを取得します.
+order メソッドを使用して、作成日の降順に並べ替えます。この方法では、新しいシーシャを最初に取得します.
+最後に、ShishasのリストをJSONレスポンスとしてrenderで送信します.
+
+次に、新しいレシピを作成するためのロジックを追加します.
+すべてのシーシャを取得するのと同様に、提供されたシーシャの詳細を検証して保存するためにActiveRecordに依存します.
+次のハイライトされた行のコードでシーシャコントローラを更新します.
+
+`
+class Api::V1::RecipesController < ApplicationController
+  def index
+    recipe = Recipe.all.order(created_at: :desc)
+    render json: recipe
+  end
+
+  def create
+    recipe = Recipe.create!(recipe_params)
+    if recipe
+      render json: recipe
+    else
+      render json: recipe.errors
+    end
+  end
+
+  def show
+  end
+
+  def destroy
+  end
+
+  private
+
+  def recipe_params
+    params.permit(:name, :image, :ingredients, :instruction)
+  end
+end
+`
+
+createアクションでは、ActiveRecordのcreateメソッドを使用して新しいレシピを作成します.
+createメソッドは、モデルに提供されたすべてのコントローラパラメータを一度に割り当てる機能を持っています.
+このため、レコードを簡単に作成できる反面、悪意のある利用の可能性が出てきます。これは、強力なパラメータとして知られるRailsが提供する機能を使用することで防ぐことができます.
+この方法では、ホワイトリストに登録されていない限り、パラメータを割り当てることはできません.
+
+あなたのコードでは、createメソッドにrecipe_paramsパラメータを渡しています.
+recipe_paramsはプライベートメソッドで、間違ったコンテンツや悪意のあるコンテンツがデータベースに入るのを防ぐためにコントローラのパラメータをホワイトリスト化しています.
+このケースでは、createメソッドの有効な使用のために、名前、画像、成分、命令パラメータを許可しています.
+
+これで、レシピコントローラはレシピを読み込んで作成することができます.
+あとは、1つのレシピを読み込んで削除するロジックだけです.次のコードでレシピコントローラを更新してください.
+
+`
+class Api::V1::RecipesController < ApplicationController
+  def index
+    recipe = Recipe.all.order(created_at: :desc)
+    render json: recipe
+  end
+
+  def create
+    recipe = Recipe.create!(recipe_params)
+    if recipe
+      render json: recipe
+    else
+      render json: recipe.errors
+    end
+  end
+
+  def show
+    if recipe
+      render json: recipe
+    else
+      render json: recipe.errors
+    end
+  end
+
+  def destroy
+    recipe&.destroy
+    render json: { message: 'Recipe deleted!' }
+  end
+
+  private
+
+  def recipe_params
+    params.permit(:name, :image, :ingredients, :instruction)
+  end
+
+  def recipe
+    @recipe ||= Recipe.find(params[:id])
+  end
+end
+`
 
