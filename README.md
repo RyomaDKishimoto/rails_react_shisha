@@ -54,3 +54,12 @@ RailsはModel-View-Controllerの設計思想を採用しています.MVCパタ�
 
 # Step 5 — Reactの設定 Railsのフロントエンドとして
 
+
+# Step 6 — Shisa ControllerとModelを生成
+このステップではShisaのControllerとModelを作成します.
+Shisa ModelはControllerから受け取ってハンドリングする情報を保持するデータベースのtableを表します.
+ユーザーがShishaをリクエストする際、Shisha controller がリクエストを受け取ってrecipe modelへパスします, 取得する、リクエストされたデータをデータベースから.
+Modelがcontrollerからの返り値としてShishaデータを返す.
+
+
+
