@@ -265,4 +265,261 @@ recipes_controller.rbへの変更が完了したら、ファイルを保存し�
 
 
 
+# Step 7 — Viewing Shishas
+
+このセクションでは、レシピを表示するためのコンポーネントを作成します。
+まず、既存のすべてのレシピを表示するページを作成し、次に個別のレシピを表示するページを作成します。
+まずはすべてのレシピを表示するページを作成します。
+しかし、これを行う前に、データベースは現在空なので、作業するためのレシピが必要です。
+Railsは、アプリケーションのシードデータを作成する機会を与えてくれます。
+
+```
+9.times do |i|
+  Recipe.create(
+    name: "Recipe #{i + 1}",
+    ingredients: '227g tub clotted cream, 25g butter, 1 tsp cornflour,100g parmesan, grated nutmeg, 250g fresh fettuccine or tagliatelle, snipped chives or chopped parsley to serve (optional)',
+    instruction: 'In a medium saucepan, stir the clotted cream, butter, and cornflour over a low-ish heat and bring to a low simmer. Turn off the heat and keep warm.'
+  )
+end
+```
+
+このコードでは、ループを使って、名前、材料、命令を指定して9つのレシピを作成するようにRailsに指示しています。ファイルを保存して終了します。
+このデータをデータベースにシードするには、ターミナルウィンドウで次のコマンドを実行します。
+```
+rails db:seed
+```
+
+このコマンドを実行すると、9つのレシピがデータベースに追加されます。これで、フロントエンドでレシピを取得してレンダリングすることができるようになりました。
+
+すべてのレシピを表示するコンポーネントは、すべてのレシピのリストを取得するために RecipesController の index アクションに HTTP リクエストを行います。これらのレシピはページ上にカードで表示されます。
+app/javascript/components ディレクトリに Recipes.jsx ファイルを作成します。
+次に、React.Component クラスを継承する Recipes クラスを作成します。
+以下のハイライトされたコードを追加して、React.Componentを継承したReactコンポーネントを作成します。
+
+```
+import React from "react";
+import { Link } from "react-router-dom";
+
+class Recipes extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      recipes: []
+    };
+  }
+
+}
+export default Recipes;
+```
+
+
+コンストラクタの内部では、レシピの状態を保持するステートオブジェクトを初期化しています。
+
+次に、RecipeクラスにcomponentDidMountメソッドを追加します。componentDidMountメソッドは、コンポーネントがマウントされた直後に呼び出されるReactのライフサイクルメソッドです。このライフサイクルメソッドでは、すべてのレシピをフェッチするための呼び出しを行います。これを行うには、以下の行を追加します。
+
+
+```
+import React from "react";
+import { Link } from "react-router-dom";
+
+class Recipes extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      recipes: []
+    };
+  }
+
+  componentDidMount() {
+      const url = "/api/v1/recipes/index";
+      fetch(url)
+        .then(response => {
+          if (response.ok) {
+            return response.json();
+          }
+          throw new Error("Network response was not ok.");
+        })
+        .then(response => this.setState({ recipes: response }))
+        .catch(() => this.props.history.push("/"));
+  }
+
+}
+export default Recipes;
+```
+
+componentDidMountメソッドでは、Fetch APIを使用してすべてのレシピを取得するためにHTTP呼び出しを行いました。レスポンスが成功した場合、アプリケーションはレシピの配列をレシピの状態に保存します。エラーが発生した場合は、ユーザーをホームページにリダイレクトします。
+
+最後に、レシピクラスにレンダーメソッドを追加します。renderメソッドは、コンポーネントがレンダリングされたときに評価されてブラウザページに表示されるReact要素を保持します。この場合、renderメソッドはコンポーネントの状態からレシピのカードをレンダリングします。Recipes.jsxに以下のハイライトされた行を追加します
+
+
+```
+import React from "react";
+import { Link } from "react-router-dom";
+
+class Recipes extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      recipes: []
+    };
+  }
+
+  componentDidMount() {
+    const url = "/api/v1/recipes/index";
+    fetch(url)
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        }
+        throw new Error("Network response was not ok.");
+      })
+      .then(response => this.setState({ recipes: response }))
+      .catch(() => this.props.history.push("/"));
+  }
+  render() {
+    const { recipes } = this.state;
+    const allRecipes = recipes.map((recipe, index) => (
+      <div key={index} className="col-md-6 col-lg-4">
+        <div className="card mb-4">
+          <img
+            src={recipe.image}
+            className="card-img-top"
+            alt={`${recipe.name} image`}
+          />
+          <div className="card-body">
+            <h5 className="card-title">{recipe.name}</h5>
+            <Link to={`/recipe/${recipe.id}`} className="btn custom-button">
+              View Recipe
+            </Link>
+          </div>
+        </div>
+      </div>
+    ));
+    const noRecipe = (
+      <div className="vw-100 vh-50 d-flex align-items-center justify-content-center">
+        <h4>
+          No recipes yet. Why not <Link to="/new_recipe">create one</Link>
+        </h4>
+      </div>
+    );
+
+    return (
+      <>
+        <section className="jumbotron jumbotron-fluid text-center">
+          <div className="container py-5">
+            <h1 className="display-4">Recipes for every occasion</h1>
+            <p className="lead text-muted">
+              We’ve pulled together our most popular recipes, our latest
+              additions, and our editor’s picks, so there’s sure to be something
+              tempting for you to try.
+            </p>
+          </div>
+        </section>
+        <div className="py-5">
+          <main className="container">
+            <div className="text-right mb-3">
+              <Link to="/recipe" className="btn custom-button">
+                Create New Recipe
+              </Link>
+            </div>
+            <div className="row">
+              {recipes.length > 0 ? allRecipes : noRecipe}
+            </div>
+            <Link to="/" className="btn btn-link">
+              Home
+            </Link>
+          </main>
+        </div>
+      </>
+    );
+  }
+}
+export default Recipes;
+```
+すべてのレシピを表示するためのコンポーネントを作成したので、次のステップはそのためのルートを作成することです。app/javascript/routes/Index.jsxにあるフロントエンドのルートファイルを開きます。
+
+```
+import React from "react";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import Home from "../components/Home";
+import Recipes from "../components/Recipes";
+
+export default (
+  <Router>
+    <Switch>
+      <Route path="/" exact component={Home} />
+      <Route path="/recipes" exact component={Recipes} />
+    </Switch>
+  </Router>
+);
+```
+これで、アプリケーションに存在するすべてのレシピを表示できるようになったので、個々のレシピを表示するための2つ目のコンポーネントを作成しましょう。
+app/javascript/components ディレクトリに Recipe.jsx ファイルを作成します。
+Recipesコンポーネントと同様に、以下の行を追加してReactモジュールとLinkモジュールをインポートします。
+```
+import React from "react";
+import { Link } from "react-router-dom";
+
+class Recipe extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { recipe: { ingredients: "" } };
+
+    this.addHtmlEntities = this.addHtmlEntities.bind(this);
+  }
+}
+
+export default Recipe;
+```
+Recipesコンポーネントと同様に、コンストラクタではレシピの状態を保持するステートオブジェクトを初期化しました。
+また、addHtmlEntitiesメソッドをこのオブジェクトにバインドして、コンポーネント内でアクセスできるようにしました。
+addHtmlEntitiesメソッドは、コンポーネント内の文字実体をHTML実体に置き換えるために使われます。
+
+特定のレシピを見つけるために、アプリケーションはレシピのidを必要とします。これは Recipe コンポーネントが id パラメーターを期待していることを意味します。
+コンポーネントに渡された小道具を介してこれにアクセスできます。
+
+次に、propsオブジェクトのマッチキーからidパラメータにアクセスするcomponentDidMountメソッドを追加します。
+idを取得したら、レシピを取得するためにHTTPリクエストを行います。次のハイライトされた行をファイルに追加してください。
+
+
+```
+import React from "react";
+import { Link } from "react-router-dom";
+
+class Recipe extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { recipe: { ingredients: "" } };
+
+    this.addHtmlEntities = this.addHtmlEntities.bind(this);
+  }
+
+  componentDidMount() {
+    const {
+      match: {
+        params: { id }
+      }
+    } = this.props;
+
+    const url = `/api/v1/show/${id}`;
+
+    fetch(url)
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        }
+        throw new Error("Network response was not ok.");
+      })
+      .then(response => this.setState({ recipe: response }))
+      .catch(() => this.props.history.push("/recipes"));
+  }
+
+}
+
+export default Recipe;
+```
+componentDidMountメソッドでは、オブジェクトの破壊を使用して、propsオブジェクトからidパラメータを取得し、Fetch APIを使用して、idを所有するレシピを取得し、setStateメソッドを使用してコンポーネントの状態に保存するためにHTTPリクエストを行います。レシピが存在しない場合、アプリはユーザーをレシピページにリダイレクトします。
+
+addHtmlEntitiesメソッドを追加します。これは文字列を受け取り、すべてのエスケープされた開括弧と閉括弧をそれらのHTMLエンティティで置き換えます。これは、レシピの命令で,保存されたエスケープされた文字を変換するのに役立ちます。
+
 
